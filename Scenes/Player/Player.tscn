@@ -1,0 +1,85 @@
+[gd_scene load_steps=18 format=2]
+
+[ext_resource path="res://Scripts/Player/PlayerController.gd" type="Script" id=1]
+[ext_resource path="res://Assets/Sprites/Player/Running/frame0000.png" type="Texture" id=2]
+[ext_resource path="res://Assets/Sprites/Player/Running/frame0012.png" type="Texture" id=3]
+[ext_resource path="res://Assets/Sprites/Player/Falling/frame0000.png" type="Texture" id=4]
+[ext_resource path="res://Assets/Sprites/Player/Jumping/frame0006.png" type="Texture" id=5]
+[ext_resource path="res://Assets/Sprites/Player/Running/frame0018.png" type="Texture" id=6]
+[ext_resource path="res://Assets/Sprites/Player/Dashing/frame0000.png" type="Texture" id=7]
+[ext_resource path="res://Assets/Sprites/Player/Jumping/frame0000.png" type="Texture" id=8]
+[ext_resource path="res://Assets/Sprites/Player/Running/frame0006.png" type="Texture" id=9]
+[ext_resource path="res://Assets/Sprites/Player/Idle/frame0006.png" type="Texture" id=10]
+[ext_resource path="res://Assets/Sprites/Player/Falling/frame0006.png" type="Texture" id=11]
+[ext_resource path="res://Assets/Sprites/Player/Jumping/frame0012.png" type="Texture" id=12]
+[ext_resource path="res://Assets/Sprites/Player/Idle/frame0000.png" type="Texture" id=13]
+[ext_resource path="res://Assets/Sprites/Player/Running/frame0024.png" type="Texture" id=14]
+[ext_resource path="res://Assets/Sprites/Player/Running/frame0030.png" type="Texture" id=15]
+
+[sub_resource type="RectangleShape2D" id=1]
+extents = Vector2( 88.1784, 402.778 )
+
+[sub_resource type="SpriteFrames" id=2]
+animations = [ {
+"frames": [ ExtResource( 8 ), ExtResource( 5 ), ExtResource( 12 ) ],
+"loop": false,
+"name": "Jumping",
+"speed": 12.0
+}, {
+"frames": [ ExtResource( 13 ), ExtResource( 10 ) ],
+"loop": true,
+"name": "Idle",
+"speed": 3.0
+}, {
+"frames": [ ExtResource( 4 ), ExtResource( 11 ) ],
+"loop": true,
+"name": "Falling",
+"speed": 12.0
+}, {
+"frames": [ ExtResource( 2 ), ExtResource( 9 ), ExtResource( 3 ), ExtResource( 6 ), ExtResource( 14 ), ExtResource( 15 ) ],
+"loop": true,
+"name": "Running",
+"speed": 12.0
+}, {
+"frames": [ ExtResource( 7 ) ],
+"loop": true,
+"name": "Dashing",
+"speed": 1.0
+} ]
+
+[node name="Player" type="KinematicBody2D" groups=[
+"Player",
+"detectable",
+]]
+scale = Vector2( 0.25, 0.25 )
+collision_layer = 4
+script = ExtResource( 1 )
+airMoveSpeed = 15.0
+groundMoveSpeed = 750.0
+pushMoveSpeed = 250.0
+gravity = 2750.0
+jumpForce = 1250.0
+snapLength = 25.0
+slopeSlideThreshold = 60.0
+dashLength = 0.35
+dashSpeed = 1500
+deathBarrier = 1500
+pushRange = 40.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2( 1.15306, -3.93667 )
+shape = SubResource( 1 )
+
+[node name="dash_timer" type="Timer" parent="."]
+one_shot = true
+
+[node name="AnimatedSprite" type="AnimatedSprite" parent="."]
+frames = SubResource( 2 )
+animation = "Idle"
+playing = true
+
+[node name="ghostTrail_timer" type="Timer" parent="."]
+wait_time = 0.02
+autostart = true
+
+[connection signal="timeout" from="ghostTrail_timer" to="." method="ghostTrail_timer_timeout"]
