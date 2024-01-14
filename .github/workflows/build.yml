@@ -1,0 +1,174 @@
+name: Build
+
+on: 
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  GODOT_VERSION: 3.3.2
+
+jobs:
+  windows:
+    name: windows
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:3.3.2
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Run GUT tests
+        run: godot -d -s addons/gut/gut_cmdln.gd
+
+      - name: Decide debugMode
+        uses: haya14busa/action-cond@v1
+        id: chooseExportMethod
+        with:
+          cond: ${{ github.event_name == 'pull_request' }}
+          if_true: "--export-debug"
+          if_false: "--export"
+
+      - name: Setup
+        run: |
+          mkdir -v -p ~/.local/share/godot/templates
+          mv /root/.local/share/godot/templates/${GODOT_VERSION}.stable ~/.local/share/godot/templates/${GODOT_VERSION}.stable
+
+      - name: Build game client
+        id: build
+        run: |
+          mkdir -v -p build/windows
+          godot -v ${{ steps.chooseExportMethod.outputs.value }} "windows" ./build/windows/NeoMori.exe
+
+      - name: Git describe
+        run: echo "GIT_DESCRIBE=$(git describe)" >> $GITHUB_ENV
+
+      - name: Upload build
+        uses: actions/upload-artifact@v2
+        with:
+          name: NeoMori-${{ github.sha }}-${{ github.job }}
+          path: ${{ github.workspace }}/build/windows/*
+
+      - name: Create override.cfg
+        if: ${{ env.GIT_DESCRIBE != '' }}
+        run: echo "global/version = \"$GIT_DESCRIBE\"" >> override.cfg
+
+      - name: Upload override.cfg
+        if: ${{ env.GIT_DESCRIBE != '' }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: NeoMori-${{ github.sha }}-${{ github.job }}
+          path: ${{ github.workspace }}/override.cfg
+
+  linux:
+    name: linux
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:3.3.2
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Run GUT tests
+        run: godot -d -s addons/gut/gut_cmdln.gd
+
+      - name: Decide debugMode
+        uses: haya14busa/action-cond@v1
+        id: chooseExportMethod
+        with:
+          cond: ${{ github.event_name == 'pull_request' }}
+          if_true: "--export-debug"
+          if_false: "--export"
+
+      - name: Setup
+        run: |
+          mkdir -v -p ~/.local/share/godot/templates
+          mv /root/.local/share/godot/templates/${GODOT_VERSION}.stable ~/.local/share/godot/templates/${GODOT_VERSION}.stable
+
+      - name: Build game client
+        id: build
+        run: |
+          mkdir -v -p build/linux
+          godot -v ${{ steps.chooseExportMethod.outputs.value }} "linux" ./build/linux/NeoMori
+
+      - name: Git describe
+        run: echo "GIT_DESCRIBE=$(git describe)" >> $GITHUB_ENV
+
+      - name: Upload build
+        uses: actions/upload-artifact@v2
+        with:
+          name: NeoMori-${{ github.sha }}-${{ github.job }}
+          path: ${{ github.workspace }}/build/linux/*
+
+      - name: Create override.cfg
+        if: ${{ env.GIT_DESCRIBE != '' }}
+        run: echo "global/version = \"$GIT_DESCRIBE\"" >> override.cfg
+
+      - name: Upload override.cfg
+        if: ${{ env.GIT_DESCRIBE != '' }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: NeoMori-${{ github.sha }}-${{ github.job }}
+          path: ${{ github.workspace }}/override.cfg
+
+  mac:
+    name: mac
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:3.3.2
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Run GUT tests
+        run: godot -d -s addons/gut/gut_cmdln.gd
+
+      - name: Decide debugMode
+        uses: haya14busa/action-cond@v1
+        id: chooseExportMethod
+        with:
+          cond: ${{ github.event_name == 'pull_request' }}
+          if_true: "--export-debug"
+          if_false: "--export"
+
+      - name: Setup
+        run: |
+          mkdir -v -p ~/.local/share/godot/templates
+          mv /root/.local/share/godot/templates/${GODOT_VERSION}.stable ~/.local/share/godot/templates/${GODOT_VERSION}.stable
+
+      - name: Build game client
+        id: build
+        run: |
+          mkdir -v -p build/mac
+          godot -v ${{ steps.chooseExportMethod.outputs.value }} "mac" ./build/mac/NeoMori.zip
+
+      - name: Git describe
+        run: echo "GIT_DESCRIBE=$(git describe)" >> $GITHUB_ENV
+
+      - name: Upload build
+        uses: actions/upload-artifact@v2
+        with:
+          name: NeoMori-${{ github.sha }}-${{ github.job }}
+          path: ${{ github.workspace }}/build/mac/*
+
+      - name: Create override.cfg
+        if: ${{ env.GIT_DESCRIBE != '' }}
+        run: echo "global/version = \"$GIT_DESCRIBE\"" >> override.cfg
+
+      - name: Upload override.cfg
+        if: ${{ env.GIT_DESCRIBE != '' }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: NeoMori-${{ github.sha }}-${{ github.job }}
+          path: ${{ github.workspace }}/override.cfg
